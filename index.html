@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TriageAI — Nigeria Edition</title>
+<meta name="description" content="TriageAI Nigeria Edition - offline triage support. Not a diagnosis.">
+<style>
+*{box-sizing:border-box}html{font-size:18px}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#0f172a;line-height:1.5}.wrap{max-width:480px;margin:0 auto;background:#fff;min-height:100vh;display:flex;flex-direction:column}.top{background:#0b5c4a;color:#fff;padding:16px}.top h1{margin:0;font-size:24px}.top p{margin:6px 0 0;font-size:18px}.badge{display:inline-block;background:#facc15;color:#111;padding:4px 10px;border-radius:999px;font-weight:800;font-size:15px;margin-top:8px}.privacy{background:#e6fffa;border-bottom:3px solid #0b5c4a;padding:10px 16px;font-size:16px;font-weight:700}.main{padding:16px;flex:1}.card{border:2px solid #0f172a;border-radius:16px;padding:16px}.h2{font-size:22px;margin:0 0 8px}.p{font-size:18px;margin:8px 0}button{width:100%;min-height:48px;font-size:19px;font-weight:800;border-radius:12px;border:3px solid #0f172a;cursor:pointer;margin-top:10px;background:#fff;color:#111}button.yes{background:#0b5c4a;color:#fff}button.notsure{background:#facc15;color:#111}button.primary{background:#111;color:#fff}label{font-size:18px;font-weight:700}.qnum{font-size:15px;font-weight:800;color:#0b5c4a}.progress{height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:10px 0}.bar{height:100%;background:#0b5c4a;width:0%}.result{border:4px solid #111;border-radius:16px;padding:16px}.result.red{background:#fef2f2;border-color:#b91c1c}.result.amber{background:#fffbeb;border-color:#b45309}.result.green{background:#f0fdf4;border-color:#166534}.warn{border:2px dashed #b91c1c;padding:12px;border-radius:12px;background:#fff;font-size:18px}.figrow{display:flex;gap:10px;overflow-x:auto;padding:8px 0}.figrow svg{flex:0 0 auto}.small{font-size:16px}.footer{border-top:3px solid #111;padding:14px 16px;background:#f8fafc}.footer h3{margin:0 0 6px;font-size:19px}.footer p{margin:4px 0;font-size:16px}
+</style>
+<script>
+const CLINICAL_CONTENT = {
+  version: "0.1.0-PLACEHOLDER",
+  status: "PENDING CLINICAL REVIEW - NOT APPROVED FOR USE",
+  source_citation: "PLACEHOLDER - To be replaced by doctors with guideline name, edition, page, and date",
+  thresholds: {
+    red_flag_rule: "PLACEHOLDER - Any single red-flag YES = HOSPITAL NOW. Doctors to define exact list. NOT SURE on a red-flag question = HOSPITAL NOW (higher category).",
+    urgent_rule: "PLACEHOLDER - Doctors to define how many / which non-red-flag YES answers = CLINIC WITHIN 24 HOURS. Current placeholder: 1 YES = CLINIC. FLAGGED FOR DOCTOR DECISION.",
+    home_rule: "PLACEHOLDER - Doctors to define when HOME CARE is allowed",
+    time_limit_clinic: "FLAGGED FOR DOCTOR DECISION - 24 hours is PLACEHOLDER, not sourced. Doctor must confirm or replace.",
+    source_citation: "PLACEHOLDER - Doctors to cite guideline for thresholds"
+  },
+  questions: [
+    {id:"r1", text:"PLACEHOLDER QUESTION 1 - Is the person having very difficult breathing or unable to speak a full sentence?", is_red_flag:true, category:"breathing", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"r2", text:"PLACEHOLDER QUESTION 2 - Is the person unconscious, very hard to wake, or not responding?", is_red_flag:true, category:"consciousness", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"r3", text:"PLACEHOLDER QUESTION 3 - Is there heavy bleeding that will not stop with pressure?", is_red_flag:true, category:"bleeding", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"r4", text:"PLACEHOLDER QUESTION 4 - Is there a new weakness on one side, face drooping, or sudden slurred speech?", is_red_flag:true, category:"neurological", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"r5", text:"PLACEHOLDER QUESTION 5 - Is the person having a seizure / convulsion right now?", is_red_flag:true, category:"seizure", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"q1", text:"PLACEHOLDER QUESTION 6 - Does the person have a fever / feel very hot?", is_red_flag:false, category:"general", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"q2", text:"PLACEHOLDER QUESTION 7 - Has the person vomited many times or cannot keep fluids down? - FLAGGED: 'many times' has no number, doctor to define", is_red_flag:false, category:"general", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"q3", text:"PLACEHOLDER QUESTION 8 - Is there pain that is getting worse and not settling?", is_red_flag:false, category:"pain", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"q4", text:"PLACEHOLDER QUESTION 9 - Has the person not passed urine for many hours? - FLAGGED: 'many hours' has no number, doctor to define", is_red_flag:false, category:"general", source_citation:"PLACEHOLDER - Doctor to add citation"},
+    {id:"q5", text:"PLACEHOLDER QUESTION 10 - Is the person unable to eat, drink, or breastfeed as usual?", is_red_flag:false, category:"general", source_citation:"PLACEHOLDER - Doctor to add citation"}
+  ],
+  warning_signs_home: [
+    "PLACEHOLDER WARNING 1 - Doctor to list",
+    "PLACEHOLDER WARNING 2 - Doctor to list",
+    "PLACEHOLDER WARNING 3 - Doctor to list",
+    "PLACEHOLDER WARNING 4 - Doctor to list"
+  ],
+  home_care_general: "PLACEHOLDER - Doctors to write safe general home care advice. NO drug names. NO dosages.",
+  source_citation_home: "PLACEHOLDER - Doctor to add citation"
+};
+const STRINGS = {
+  en:{app:"TriageAI - Nigeria Edition",start:"Start Triage",restart:"Restart - Clear Answers",back:"Back",yes:"YES",no:"NO",notsure:"NOT SURE",summary:"What to tell the nurse",read_aloud:"Read Aloud",print:"Print / Save Summary",language:"Language"}
+};
+</script>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><h1>TriageAI — Nigeria Edition</h1><p>Short yes / no questions. One clear next step.</p><span class="badge">PENDING CLINICAL REVIEW — NOT APPROVED</span></div>
+<div class="privacy">Your answers stay on this phone only. Nothing is transmitted, ever. Data never leaves the device. Results are cleared when you close the app.</div>
+<main class="main" id="app"></main>
+<div class="footer" id="footer">
+<h3>Sign-off — PENDING CLINICAL REVIEW</h3>
+<p><b>Content version:</b> <span id="fv">0.1.0-PLACEHOLDER</span></p>
+<p><b>Status:</b> PENDING CLINICAL REVIEW — NOT APPROVED FOR USE</p>
+<p><b>Reviewer name:</b> ________________________ [TO BE FILLED BY DOCTOR]</p>
+<p><b>Registration number:</b> ________________________ [TO BE FILLED BY DOCTOR]</p>
+<p><b>Reviewer 2 name:</b> ________________________ [TO BE FILLED BY DOCTOR]</p>
+<p><b>Registration number 2:</b> ________________________ [TO BE FILLED BY DOCTOR]</p>
+<p><b>Review date:</b> ________________________ [TO BE FILLED BY DOCTOR]</p>
+<p><b>This is not a diagnosis.</b> This tool does not act as a doctor. It only helps you decide where to seek care.</p>
+<p class="small">No diagnosis. No disease names as a conclusion. No drug names. No dosages.</p>
+</div>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="skin1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a3a22"/><stop offset="1" stop-color="#2e1a0e"/></linearGradient>
+<linearGradient id="skin2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4e2d"/><stop offset="1" stop-color="#3d2412"/></linearGradient>
+<linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b5c4a"/><stop offset="1" stop-color="#07382e"/></linearGradient>
+<linearGradient id="cloth2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/></linearGradient>
+<linearGradient id="cloth3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient>
+</defs></svg>
+<script>
+let state = {lang:'en', idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()};
+try{
+  const doneRaw = sessionStorage.getItem('triageai_result_v1');
+  if(doneRaw){
+    state = JSON.parse(doneRaw);
+  } else {
+    const raw = localStorage.getItem('triageai_v1');
+    if(raw){
+      const saved = JSON.parse(raw);
+      const age = Date.now() - (saved.startedAt || 0);
+      const tooOld = !saved.startedAt || age > 24*60*60*1000;
+      const wasDone = saved.done === true;
+      if(tooOld || wasDone){ localStorage.removeItem('triageai_v1'); }
+      else { state = saved; }
+    }
+  }
+}catch(e){ try{localStorage.removeItem('triageai_v1');}catch(_){} try{sessionStorage.removeItem('triageai_result_v1');}catch(_){} }
+function save(){
+  try{
+    if(state.done){
+      localStorage.removeItem('triageai_v1');
+      sessionStorage.setItem('triageai_result_v1', JSON.stringify(state));
+      return;
+    }
+    if(!state.startedAt) state.startedAt = Date.now();
+    localStorage.setItem('triageai_v1', JSON.stringify(state));
+  }catch(e){}
+}
+function clearStored(){ try{localStorage.removeItem('triageai_v1');}catch(e){} try{sessionStorage.removeItem('triageai_result_v1');}catch(e){} }
+function t(k){ return (STRINGS[state.lang] && STRINGS[state.lang][k]) || STRINGS.en[k]; }
+function outcomeTitle(){
+  if(state.outcome==='hospital') return 'GO TO A HOSPITAL NOW';
+  if(state.outcome==='clinic') return 'ATTEND A CLINIC WITHIN 24 HOURS';
+  return 'CARE AT HOME';
+}
+function outcomeDesc(){
+  if(state.outcome==='hospital') return 'Do not wait. Go now. Take this summary with you.';
+  if(state.outcome==='clinic') return 'Go to a clinic within 24 hours. If any warning sign appears, go to hospital now.';
+  return 'Home care guidance is pending doctor sign-off.';
+}
+function figure(type){
+  const skin = type==='woman'||type==='pregnant' ? 'url(#skin2)' : 'url(#skin1)';
+  const cloth = type==='worker' ? 'url(#cloth3)' : type==='carer' ? 'url(#cloth2)' : 'url(#cloth)';
+  const belly = type==='pregnant' ? '<ellipse cx="60" cy="78" rx="16" ry="12" fill="'+skin+'" opacity="0.95"/>' : '';
+  const hair = '<circle cx="60" cy="28" r="17" fill="#111"/>';
+  const cane = type==='older' ? '<rect x="78" y="60" width="4" height="48" rx="2" fill="#111"/>' : '';
+  return '<svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="'+type+' figure"><ellipse cx="60" cy="108" rx="38" ry="6" fill="#cbd5e1"/>'+hair+'<circle cx="60" cy="32" r="14" fill="'+skin+'"/><ellipse cx="56" cy="32" rx="2" ry="3" fill="#fff"/><ellipse cx="64" cy="32" rx="2" ry="3" fill="#fff"/><rect x="44" y="46" width="32" height="42" rx="12" fill="'+cloth+'"/>'+belly+'<rect x="38" y="52" width="10" height="38" rx="5" fill="'+skin+'"/><rect x="72" y="52" width="10" height="38" rx="5" fill="'+skin+'"/><rect x="46" y="88" width="11" height="22" rx="5" fill="#1f2937"/><rect x="63" y="88" width="11" height="22" rx="5" fill="#1f2937"/>'+cane+'</svg>';
+}
+function render(){
+  const app = document.getElementById('app');
+  document.getElementById('fv').textContent = CLINICAL_CONTENT.version;
+  if(!state.done){
+    if(state.idx===0 && Object.keys(state.answers).length===0){
+      app.innerHTML = '<div class="card"><div class="figrow">'+figure('woman')+figure('man')+figure('child')+figure('pregnant')+figure('older')+figure('worker')+'</div><h2 class="h2">Who needs help today?</h2><p class="p">This tool is for community health workers, carers and patients. It is <b>NOT</b> a doctor.</p><p class="small">English only. Other Nigerian languages will be added only after a signed translation.</p><button class="primary" onclick="start()">'+t('start')+'</button><p class="small">One question per screen. If any red-flag answer is YES or NOT SURE, we stop at once and tell you: Go to hospital now.</p></div>';
+      return;
+    }
+    const q = CLINICAL_CONTENT.questions[state.idx];
+    const pct = Math.round((state.idx / CLINICAL_CONTENT.questions.length)*100);
+    const notSureBtn = q.is_red_flag ? '<button class="notsure" onclick="answer(\'notsure\')">NOT SURE</button>' : '';
+    app.innerHTML = '<div class="card"><div class="qnum">Question '+(state.idx+1)+' of '+CLINICAL_CONTENT.questions.length+' - '+q.category+'</div><div class="progress"><div class="bar" style="width:'+pct+'%"></div></div><h2 class="h2">'+q.text+'</h2><p class="small">PLACEHOLDER - Doctors to confirm wording.</p><button class="yes" onclick="answer(\'yes\')">YES</button>'+notSureBtn+'<button onclick="answer(\'no\')">NO</button><button onclick="back()">Back</button><button onclick="restart()">'+t('restart')+'</button></div>';
+    return;
+  }
+  let cls='green', title=outcomeTitle(), desc=outcomeDesc();
+  if(state.outcome==='hospital'){ cls='red'; }
+  if(state.outcome==='clinic'){ cls='amber'; }
+  let list = '';
+  CLINICAL_CONTENT.questions.forEach(q=>{ if(state.answers[q.id]){ list += '<li><b>'+q.text+'</b> - Answer: '+state.answers[q.id].toUpperCase()+'</li>'; } });
+  let warns = CLINICAL_CONTENT.warning_signs_home.map(w=>'<li>'+w+'</li>').join('');
+  app.innerHTML = '<div class="result '+cls+'"><h2 class="h2">'+title+'</h2><p class="p">'+desc+'</p><div class="warn"><b>Warning signs - come back / go to hospital now if:</b><ul>'+warns+'</ul></div></div><div class="card" style="margin-top:12px"><h2 class="h2">'+t('summary')+'</h2><p class="p" id="summaryText">TriageAI summary.</p><ul id="ansList">'+list+'</ul><p class="p">Outcome: '+title+'</p><p class="p" id="voiceMsg" aria-live="polite"></p><button class="primary" onclick="speak()">'+t('read_aloud')+'</button><button onclick="window.print()">'+t('print')+'</button><button onclick="restart()">'+t('restart')+'</button><p class="small">This result is kept only until this tab closes. Restart clears it.</p></div>';
+}
+function start(){ state.idx=0; state.answers={}; state.done=false; state.outcome=null; state.redFlagId=null; state.startedAt=Date.now(); save(); render(); }
+function back(){ if(state.idx>0){ state.idx--; delete state.answers[CLINICAL_CONTENT.questions[state.idx].id]; save(); render(); } else { state.answers={}; save(); render(); } }
+function restart(){ clearStored(); state={lang:'en', idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()}; clearStored(); render(); }
+function answer(v){
+  const q = CLINICAL_CONTENT.questions[state.idx];
+  state.answers[q.id]=v; save();
+  if(q.is_red_flag && (v==='yes' || v==='notsure')){ state.done=true; state.outcome='hospital'; state.redFlagId=q.id; save(); render(); return; }
+  if(state.idx+1 < CLINICAL_CONTENT.questions.length){ state.idx++; save(); render(); return; }
+  finish();
+}
+function finish(){
+  state.done=true;
+  const yesCount = Object.values(state.answers).filter(x=>x==='yes').length;
+  if(yesCount>=1){ state.outcome='clinic'; } else { state.outcome='home'; }
+  save(); render();
+}
+function speak(){
+  const title = outcomeTitle();
+  const desc = outcomeDesc();
+  const warns = CLINICAL_CONTENT.warning_signs_home.join('. ');
+  let ansText = '';
+  CLINICAL_CONTENT.questions.forEach(q=>{ if(state.answers[q.id]){ ansText += q.text + ' Answer: ' + state.answers[q.id] + '. '; } });
+  const full = 'Outcome: ' + title + '. ' + desc + ' Warning signs: ' + warns + '. Answered questions: ' + ansText;
+  const msgEl = document.getElementById('voiceMsg');
+  try{
+    if(!('speechSynthesis' in window)){ if(msgEl){ msgEl.textContent = 'Read aloud is not available on this phone, please read the summary aloud.'; } return; }
+    const voices = speechSynthesis.getVoices() || [];
+    const hasVoice = voices.length > 0;
+    if(!hasVoice){ if(msgEl){ msgEl.textContent = 'Read aloud is not available on this phone, please read the summary aloud.'; } return; }
+    const u=new SpeechSynthesisUtterance(full);
+    u.lang='en-NG';
+    const match = voices.find(v=>v.lang && v.lang.toLowerCase().indexOf('en')===0);
+    if(match) u.voice = match;
+    if(msgEl) msgEl.textContent = '';
+    speechSynthesis.speak(u);
+  }catch(e){ if(msgEl){ msgEl.textContent = 'Read aloud is not available on this phone, please read the summary aloud.'; } }
+}
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function(){ speechSynthesis.getVoices(); }; }
+render();
+</script>
+</body>
+</html>
