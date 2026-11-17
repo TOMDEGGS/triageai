@@ -138,9 +138,10 @@ function render(){
   if(state.outcome==='hospital'){ cls='red'; }
   if(state.outcome==='clinic'){ cls='amber'; }
   let list = '';
-  CLINICAL_CONTENT.questions.forEach(q=>{ if(state.answers[q.id]){ list += '<li><b>'+q.text+'</b> - Answer: '+state.answers[q.id].toUpperCase()+'</li>'; } });
+  CLINICAL_CONTENT.questions.forEach(q=>{ if(state.answers[q.id]){ list += '<li><b>'+q.text+'</b> - Answer: '+(state.answers[q.id]==='notsure'?'NOT SURE':state.answers[q.id].toUpperCase())+'</li>'; } });
   let warns = CLINICAL_CONTENT.warning_signs_home.map(w=>'<li>'+w+'</li>').join('');
-  app.innerHTML = '<div class="result '+cls+'"><h2 class="h2">'+title+'</h2><p class="p">'+desc+'</p><div class="warn"><b>Warning signs - come back / go to hospital now if:</b><ul>'+warns+'</ul></div></div><div class="card" style="margin-top:12px"><h2 class="h2">'+t('summary')+'</h2><p class="p" id="summaryText">TriageAI summary.</p><ul id="ansList">'+list+'</ul><p class="p">Outcome: '+title+'</p><p class="p" id="voiceMsg" aria-live="polite"></p><button class="primary" onclick="speak()">'+t('read_aloud')+'</button><button onclick="window.print()">'+t('print')+'</button><button onclick="restart()">'+t('restart')+'</button><p class="small">This result is kept only until this tab closes. Restart clears it.</p></div>';
+  const warnHtml = (state.outcome==='hospital') ? '' : '<div class="warn"><b>Warning signs - come back / go to hospital now if:</b><ul>'+warns+'</ul></div>';
+  app.innerHTML = '<div class="result '+cls+'"><h2 class="h2">'+title+'</h2><p class="p">'+desc+'</p>'+warnHtml+'</div><div class="card" style="margin-top:12px"><h2 class="h2">'+t('summary')+'</h2><p class="p" id="summaryText">TriageAI summary.</p><ul id="ansList">'+list+'</ul><p class="p">Outcome: '+title+'</p><p class="p" id="voiceMsg" aria-live="polite"></p><button class="primary" onclick="speak()">'+t('read_aloud')+'</button><button onclick="window.print()">'+t('print')+'</button><button onclick="restart()">'+t('restart')+'</button><p class="small">This result is kept only until this tab closes. Restart clears it.</p></div>';
 }
 function start(){ state.started=true; state.idx=0; state.answers={}; state.done=false; state.outcome=null; state.redFlagId=null; state.startedAt=Date.now(); save(); render(); }
 function back(){ if(state.idx>0){ state.idx--; delete state.answers[CLINICAL_CONTENT.questions[state.idx].id]; save(); render(); } else { state.answers={}; save(); render(); } }
@@ -164,7 +165,8 @@ function speak(){
   const warns = CLINICAL_CONTENT.warning_signs_home.join('. ');
   let ansText = '';
   CLINICAL_CONTENT.questions.forEach(q=>{ if(state.answers[q.id]){ ansText += q.text + ' Answer: ' + state.answers[q.id] + '. '; } });
-  const full = 'Outcome: ' + title + '. ' + desc + ' Warning signs: ' + warns + '. Answered questions: ' + ansText;
+  const warnsPart = (state.outcome==='hospital') ? '' : (' Warning signs: ' + warns + '.');
+  const full = 'Outcome: ' + title + '. ' + desc + warnsPart + ' Answered questions: ' + ansText;
   const msgEl = document.getElementById('voiceMsg');
   try{
     if(!('speechSynthesis' in window)){ if(msgEl){ msgEl.textContent = 'Read aloud is not available on this phone, please read the summary aloud.'; } return; }
