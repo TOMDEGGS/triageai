@@ -72,7 +72,7 @@ const STRINGS = {
 <linearGradient id="cloth3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient>
 </defs></svg>
 <script>
-let state = {lang:'en', idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()};
+let state = {lang:'en', started:false, idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()};
 try{
   const doneRaw = sessionStorage.getItem('triageai_result_v1');
   if(doneRaw){
@@ -85,7 +85,7 @@ try{
       const tooOld = !saved.startedAt || age > 24*60*60*1000;
       const wasDone = saved.done === true;
       if(tooOld || wasDone){ localStorage.removeItem('triageai_v1'); }
-      else { state = saved; }
+      else { state = saved; if(state.started === undefined){ state.started = (state.idx > 0) || (Object.keys(state.answers||{}).length > 0); } }
     }
   }
 }catch(e){ try{localStorage.removeItem('triageai_v1');}catch(_){} try{sessionStorage.removeItem('triageai_result_v1');}catch(_){} }
@@ -124,7 +124,7 @@ function render(){
   const app = document.getElementById('app');
   document.getElementById('fv').textContent = CLINICAL_CONTENT.version;
   if(!state.done){
-    if(state.idx===0 && Object.keys(state.answers).length===0){
+    if(!state.started){
       app.innerHTML = '<div class="card"><div class="figrow">'+figure('woman')+figure('man')+figure('child')+figure('pregnant')+figure('older')+figure('worker')+'</div><h2 class="h2">Who needs help today?</h2><p class="p">This tool is for community health workers, carers and patients. It is <b>NOT</b> a doctor.</p><p class="small">English only. Other Nigerian languages will be added only after a signed translation.</p><button class="primary" onclick="start()">'+t('start')+'</button><p class="small">One question per screen. If any red-flag answer is YES or NOT SURE, we stop at once and tell you: Go to hospital now.</p></div>';
       return;
     }
@@ -142,9 +142,9 @@ function render(){
   let warns = CLINICAL_CONTENT.warning_signs_home.map(w=>'<li>'+w+'</li>').join('');
   app.innerHTML = '<div class="result '+cls+'"><h2 class="h2">'+title+'</h2><p class="p">'+desc+'</p><div class="warn"><b>Warning signs - come back / go to hospital now if:</b><ul>'+warns+'</ul></div></div><div class="card" style="margin-top:12px"><h2 class="h2">'+t('summary')+'</h2><p class="p" id="summaryText">TriageAI summary.</p><ul id="ansList">'+list+'</ul><p class="p">Outcome: '+title+'</p><p class="p" id="voiceMsg" aria-live="polite"></p><button class="primary" onclick="speak()">'+t('read_aloud')+'</button><button onclick="window.print()">'+t('print')+'</button><button onclick="restart()">'+t('restart')+'</button><p class="small">This result is kept only until this tab closes. Restart clears it.</p></div>';
 }
-function start(){ state.idx=0; state.answers={}; state.done=false; state.outcome=null; state.redFlagId=null; state.startedAt=Date.now(); save(); render(); }
+function start(){ state.started=true; state.idx=0; state.answers={}; state.done=false; state.outcome=null; state.redFlagId=null; state.startedAt=Date.now(); save(); render(); }
 function back(){ if(state.idx>0){ state.idx--; delete state.answers[CLINICAL_CONTENT.questions[state.idx].id]; save(); render(); } else { state.answers={}; save(); render(); } }
-function restart(){ clearStored(); state={lang:'en', idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()}; clearStored(); render(); }
+function restart(){ clearStored(); state={lang:'en', started:false, idx:0, answers:{}, done:false, outcome:null, redFlagId:null, startedAt: Date.now()}; clearStored(); render(); }
 function answer(v){
   const q = CLINICAL_CONTENT.questions[state.idx];
   state.answers[q.id]=v; save();
